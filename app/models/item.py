@@ -1,14 +1,12 @@
-# models/item.py
 from app.db import db
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
-from .order_item import OrderItem
 
 
 class Item(db.Model):
     __tablename__ = 'items'
 
-    item_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    item_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
     price = Column(Float, nullable=False)
     quantity = Column(Integer, nullable=False)
