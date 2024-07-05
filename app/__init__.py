@@ -25,6 +25,13 @@ def create_app() -> Flask:
     migrate.init_app(app, db)
     celery.conf.update(app.config)
 
+    with app.app_context():
+        # Import all models here to ensure they are registered correctly
+        from .models.booking import Booking
+        from .models.item import Item
+        from .models.order import Order
+        from .models.order_item import OrderItem
+
     api = Api(app)
 
     # Import and initialize routes

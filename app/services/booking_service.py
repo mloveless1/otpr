@@ -1,53 +1,35 @@
-from app.db import db
-from app.models.booking import Booking
-from app.models.order import Order
-from app.models.order_item import OrderItem
-from app.models.item import Item
+from datetime import datetime
+
+from app.services.DAOs.booking_DAO import BookingDAO
+from app.schemas.booking_DTO import BookingSchema
 
 
 class BookingService:
-    def create_booking(self, start_date, end_date, customer_name, customer_phone, customer_address, item_quantities):
-        try:
-            # Start a new transaction
-            new_order = Order(
-                customer_name=customer_name,
-                customer_phone=customer_phone,
-                customer_address=customer_address
-            )
-            db.session.add(new_order)
-            db.session.flush()  # Flush to get new_order.order_id
+    def __init__(self):
+        self.booking_schema = BookingSchema()
+        self.booking_dao = BookingDAO()
 
-            # Create order items and update quantities
-            for item_id, quantity in item_quantities.items():
-                item = Item.query.get(item_id)
-                if item and item.quantity >= quantity:
-                    order_item = OrderItem(
-                        order_id=new_order.order_id,
-                        item_id=item_id,
-                        quantity=quantity
-                    )
-                    db.session.add(order_item)
-                    item.quantity -= quantity  # Update item quantity
-                else:
-                    raise ValueError(f"Item {item_id} not available in the requested quantity")
-
-            # Create a new booking
-            new_booking = Booking(
-                start_date=start_date,
-                end_date=end_date,
-                order_id=new_order.order_id
-            )
-            db.session.add(new_booking)
-
-            # Commit the transaction only if all operations succeed
-            db.session.commit()
-
-            return new_booking
-
-        except Exception as e:
-            # Rollback the transaction if any error occurs
-            db.session.rollback()
-            raise e
+    def get_all_bookings(self):
+        bookings = BookingDAO.get_all_bookings()
+        return [self.booking_schema.dump(booking) for booking in bookings]
 
     def get_booking(self, booking_id):
-        return Booking.query.get(booking_id)
+        booking = BookingDAO.get_booking_by_id(booking_id)
+        if booking:
+            return self.booking_schema.dump(booking)
+        return None
+
+    def create_booking(self, start_date, end_date, order_id):
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        new_booking = BookingDAO.create_booking(start_date, end_date, order_id)
+        return self.booking_schema.dump(new_booking)
+
+    def update_booking(self, booking_id, start_date=None, end_date=None, order_id=None):
+        updated_booking = BookingDAO.update_booking(booking_id, start_date, end_date, order_id)
+        if updated_booking:
+            return self.booking_schema.dump(updated_booking)
+        return None
+
+    def delete_booking(self, booking_id):
+        return self.booking_dao.delete_booking(booking_id)

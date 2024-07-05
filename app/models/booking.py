@@ -1,5 +1,5 @@
 from app.db import db
-from sqlalchemy import Column, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
 
@@ -9,6 +9,7 @@ class Booking(db.Model):
     booking_id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     start_date = Column(DateTime)
     end_date = Column(DateTime)
+    accepted = Column(Boolean, default=False, nullable=False)
     order_id = Column(Integer, ForeignKey('orders.order_id'))
 
     order = relationship("Order", back_populates="bookings")

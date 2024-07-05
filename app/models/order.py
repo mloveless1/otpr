@@ -12,6 +12,7 @@ class Order(db.Model):
     customer_phone = Column(String(20), nullable=False)
     customer_address = Column(String(50), nullable=False)
 
+    bookings = relationship('Booking', back_populates='order')
     order_items = relationship('OrderItem', back_populates='order')
 
     def to_dict(self):
